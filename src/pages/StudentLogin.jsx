@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import DevCredit from '../components/DevCredit';
 
@@ -91,7 +91,7 @@ export default function StudentLogin() {
                     </div>
                 </div>
                 <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    <a href="/" style={{ color: 'var(--accent)' }}>← Back to Home</a>
+                    <Link to="/" style={{ color: 'var(--accent)' }}>← Back to Home</Link>
                 </p>
                 <DevCredit />
             </div>
