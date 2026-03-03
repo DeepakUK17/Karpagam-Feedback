@@ -1,0 +1,24 @@
+name: Supabase Keep-Alive Ping
+
+on:
+  schedule:
+    # 3:30 AM UTC = 9:00 AM IST every day
+    - cron: '30 3 * * *'
+  workflow_dispatch:   # allow manual trigger from GitHub UI
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase (keep database active)
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.VITE_SUPABASE_URL }}/rest/v1/students?select=roll_number&limit=1" \
+            -H "apikey: ${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.VITE_SUPABASE_ANON_KEY }}")
+          echo "Supabase ping status: $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "406" ]; then
+            echo "Unexpected status code: $STATUS"
+            exit 1
+          fi
+          echo "Keep-alive ping successful!"
