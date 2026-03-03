@@ -27,8 +27,10 @@ export default function Header({ type = 'default' }) {
             <div className="header-inner">
                 <img src={import.meta.env.BASE_URL + 'logo.jpg'} alt="KAHE Logo" className="header-logo" style={{ borderRadius: '10px', objectFit: 'contain', background: 'white' }} />
                 <div className="header-titles">
-                    <h1>Karpagam Academy of Higher Education</h1>
-                    <p>Enable | Enlighten | Enrich · (Deemed to be University)</p>
+                    <h1>KARPAGAM ACADEMY OF HIGHER EDUCATION</h1>
+                    <p>(Deemed to be University) <br />
+                        (Established Under Section 3 of UGC Act, 1956) <br />
+                        Accredited with A+ Grade by NAAC in the Second cycle.</p>
                 </div>
                 <span className="header-badge">{badgeText}</span>
                 {(type === 'admin' || type === 'student') && (

@@ -15,11 +15,10 @@ export default function StudentLogin() {
         setLoading(true);
         setError('');
         try {
-            const roll = rollNumber.trim().toLowerCase();
             const { data: student, error: fetchErr } = await supabase
                 .from('students')
                 .select('*')
-                .eq('roll_number', rollNumber.trim())
+                .ilike('roll_number', rollNumber.trim())
                 .single();
 
             if (fetchErr || !student) {
@@ -43,8 +42,10 @@ export default function StudentLogin() {
             <div className="login-box">
                 <div className="login-logo-wrap">
                     <img src={import.meta.env.BASE_URL + 'logo.jpg'} alt="KAHE Logo" className="login-logo" style={{ borderRadius: '12px', objectFit: 'contain', background: 'white' }} />
-                    <div className="login-college-name">Karpagam Academy of Higher Education</div>
-                    <div className="login-college-sub">(Deemed to be University)</div>
+                    <div className="login-college-name">KARPAGAM ACADEMY OF HIGHER EDUCATION</div>
+                    <div className="login-college-sub">(Deemed to be University) <br />
+                        (Established Under Section 3 of UGC Act, 1956) <br />
+                        Accredited with A+ Grade by NAAC in the Second cycle.</div>
                 </div>
 
                 <div className="card">
@@ -62,7 +63,7 @@ export default function StudentLogin() {
                                 <input
                                     type="text"
                                     className="form-input"
-                                    placeholder="e.g. 2023001"
+                                    placeholder="e.g. 24BTAD013"
                                     value={rollNumber}
                                     onChange={e => setRollNumber(e.target.value)}
                                     required
@@ -75,7 +76,7 @@ export default function StudentLogin() {
                                 <input
                                     type="password"
                                     className="form-input"
-                                    placeholder="Default: karpagam"
+                                    placeholder="karpagam"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     required
@@ -85,9 +86,6 @@ export default function StudentLogin() {
                                 {loading ? '⏳ Logging In...' : '🔐 Login'}
                             </button>
                         </form>
-                        <div style={{ marginTop: '16px', padding: '12px', background: 'var(--success-light)', borderRadius: 'var(--radius-sm)', fontSize: '0.78rem', color: 'var(--primary)' }}>
-                            💡 <strong>Password:</strong> karpagam
-                        </div>
                     </div>
                 </div>
                 <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>

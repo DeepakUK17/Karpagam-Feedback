@@ -14,194 +14,225 @@ const QUESTIONS = [
     'Fulfilment of expectation of the course (over all satisfaction)',
 ];
 
-export async function generatePDFReport(session, assignments, responses) {
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const pageW = doc.internal.pageSize.getWidth();
+function getDeanLabel(facultyType) {
+    if (!facultyType) return 'Dean';
+    const ft = facultyType.toUpperCase();
+    if (ft.includes('ENGINEERING') || ft.includes('FOE')) return 'Dean / FOE';
+    if (ft.includes('PHARMACY') || ft.includes('FOP')) return 'Dean / FOP';
+    if (ft.includes('ARTS') || ft.includes('SCIENCE') || ft.includes('FAS')) return 'Dean / FASam';
+    return 'Dean';
+}
 
-    // ---- Header ----
-    // Try to add logo
+export async function generatePDFReport(session, assignments, responses) {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();   // 297
+    const pageH = doc.internal.pageSize.getHeight();  // 210
+    const marginL = 14;
+    const marginR = 14;
+
+
+    // ── LOGO (top left) ───────────────────────────────────────────
     try {
         const img = new Image();
-        img.src = '/logo.jpg';
-        await new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
-        doc.addImage(img, 'JPEG', pageW / 2 - 12, 8, 24, 24);
-    } catch (_) { /* skip logo if fails */ }
+        const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL)
+            ? import.meta.env.BASE_URL : '/';
+        img.src = base + 'logo.jpg';
+        await new Promise((res) => { img.onload = res; img.onerror = res; });
+        if (img.naturalWidth > 0) doc.addImage(img, 'JPEG', marginL, 6, 24, 24);
+    } catch (_) { /* skip */ }
 
-    doc.setFontSize(14);
+
+    // ── COLLEGE NAME & SUBTITLE ───────────────────────────────────
+    let y = 12;
+    doc.setFontSize(15);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(27, 94, 32);
-    doc.text('KARPAGAM ACADEMY OF HIGHER EDUCATION', pageW / 2, 38, { align: 'center' });
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(80, 80, 80);
-    doc.text('(Deemed to be University) · Enable | Enlighten | Enrich', pageW / 2, 44, { align: 'center' });
+    doc.text('KARPAGAM ACADEMY OF HIGHER EDUCATION', pageW / 2, y, { align: 'center' });
 
-    doc.setFontSize(12);
+    y += 6;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(46, 125, 50);
+    doc.text('(Deemed to be University)', pageW / 2, y, { align: 'center' });
+
+    y += 4.5;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(70, 70, 70);
+    doc.text('(Established Under Section 3 of UGC Act, 1956)', pageW / 2, y, { align: 'center' });
+
+    y += 4.5;
+    doc.text('Accredited with A+ Grade by NAAC in the Second cycle.', pageW / 2, y, { align: 'center' });
+
+    // ── REPORT TITLE ─────────────────────────────────────────────
+    y += 6;
+    doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(27, 94, 32);
-    doc.text('STUDENT FEEDBACK REPORT', pageW / 2, 52, { align: 'center' });
+    doc.text('STUDENT FEEDBACK REPORT', pageW / 2, y, { align: 'center' });
 
-    // Divider
-    doc.setDrawColor(46, 125, 50);
-    doc.setLineWidth(0.8);
-    doc.line(14, 55, pageW - 14, 55);
+    // ── DIVIDER ───────────────────────────────────────────────────
+    y += 4;
+    doc.setDrawColor(27, 94, 32);
+    doc.setLineWidth(1);
+    doc.line(marginL, y, pageW - marginR, y);
 
-    // Session info
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(40, 40, 40);
+    // ── SESSION INFO  (4 stacked rows) ────────────────────────────
+    y += 7;
     const info = [
         ['Faculty / Dept', session.faculty_type + (session.department ? ' – ' + session.department : '')],
         ['Batch', session.batch || '-'],
         ['Academic Year', session.academic_year || '-'],
         ['Year / Section', `${session.year || '-'} / ${session.section || '-'}`],
-        ['Generated On', new Date().toLocaleString('en-IN')],
     ];
-    let y = 60;
+    doc.setFontSize(10);
     info.forEach(([label, val]) => {
         doc.setFont('helvetica', 'bold');
-        doc.text(label + ':', 14, y);
+        doc.setTextColor(30, 30, 30);
+        doc.text(label + ':', marginL, y);
         doc.setFont('helvetica', 'normal');
-        doc.text(val, 55, y);
+        doc.text(String(val), 58, y);
         y += 5.5;
     });
 
-    // ---- Aggregate by subject ----
+    // ── AGGREGATE DATA ────────────────────────────────────────────
     const subjectMap = {};
     assignments.forEach(a => {
         if (!subjectMap[a.subject_code]) {
             subjectMap[a.subject_code] = {
                 subject_code: a.subject_code,
                 subject_name: a.subject_name,
-                staff_id: a.staff_id,
                 staff_name: a.staff_name,
                 responses: [],
             };
         }
     });
-
     responses.forEach(r => {
-        if (subjectMap[r.subject_code]) {
-            const total = (r.q1 + r.q2 + r.q3 + r.q4 + r.q5 + r.q6 + r.q7 + r.q8 + r.q9 + r.q10) / 10;
-            subjectMap[r.subject_code].responses.push({ r, total });
-        }
+        if (subjectMap[r.subject_code]) subjectMap[r.subject_code].responses.push(r);
     });
 
     const subjectAvgRows = [];
-    let grandTotalSum = 0, grandCount = 0;
-
     Object.values(subjectMap).forEach(sub => {
-        const respCount = sub.responses.length;
-        const avg = respCount > 0
-            ? sub.responses.reduce((s, x) => s + x.total, 0) / respCount
-            : 0;
-        grandTotalSum += avg * respCount;
-        grandCount += respCount;
+        const resps = sub.responses;
+        const count = resps.length;
+        const qAvgs = Array.from({ length: 10 }, (_, i) => {
+            const key = `q${i + 1}`;
+            const vals = resps.filter(r => r[key] != null).map(r => r[key]);
+            return vals.length ? (vals.reduce((s, v) => s + v, 0) / vals.length).toFixed(2) : 'N/A';
+        });
+        const overallVals = resps.map(r =>
+            [r.q1, r.q2, r.q3, r.q4, r.q5, r.q6, r.q7, r.q8, r.q9, r.q10]
+                .filter(v => v != null).reduce((s, v) => s + v, 0) / 10
+        );
+        const overallAvg = overallVals.length
+            ? (overallVals.reduce((s, v) => s + v, 0) / overallVals.length).toFixed(2)
+            : 'N/A';
         subjectAvgRows.push([
-            sub.subject_code,
-            sub.subject_name || '-',
-            sub.staff_name || '-',
-            respCount,
-            avg > 0 ? avg.toFixed(2) : 'N/A',
-            avg > 0 ? ((avg / 5) * 100).toFixed(1) + '%' : 'N/A',
+            sub.subject_code, sub.subject_name || '-', sub.staff_name || '-',
+            ...qAvgs, count, overallAvg,
         ]);
     });
 
-    const overallAvg = grandCount > 0 ? grandTotalSum / grandCount : 0;
-
-    // ---- Summary Stats Table ----
-    y += 4;
+    // ── SUBJECT-WISE TABLE ────────────────────────────────────────
+    y += 2;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(27, 94, 32);
-    doc.text('SUMMARY', 14, y);
-    y += 3;
-
-    const totalAssigned = [...new Set(assignments.map(a => a.roll_number))].length;
-    const totalCompleted = [...new Set(assignments.filter(a => a.completed).map(a => a.roll_number))].length;
+    doc.text('SUBJECT-WISE FEEDBACK ANALYSIS', marginL, y);
 
     autoTable(doc, {
-        startY: y,
-        head: [['Total Students', 'Completed', 'Pending', 'Completion %', 'Overall Avg (out of 5)']],
-        body: [[
-            totalAssigned,
-            totalCompleted,
-            totalAssigned - totalCompleted,
-            totalAssigned > 0 ? ((totalCompleted / totalAssigned) * 100).toFixed(1) + '%' : '0%',
-            overallAvg > 0 ? overallAvg.toFixed(2) : 'N/A',
+        startY: y + 3,
+        head: [[
+            'Course Code', 'Course Name', 'Staff Name',
+            'Q1', 'Q2', 'Q3', 'Q4', 'Q5',
+            'Q6', 'Q7', 'Q8', 'Q9', 'Q10',
+            'Students\nCount', 'Avg of\nAll 10',
         ]],
-        theme: 'grid',
-        headStyles: { fillColor: [27, 94, 32], textColor: 255, fontStyle: 'bold', fontSize: 8 },
-        bodyStyles: { fontSize: 9, halign: 'center' },
-        margin: { left: 14, right: 14 },
-    });
-
-    // ---- Subject-wise Table ----
-    const afterSummary = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(27, 94, 32);
-    doc.text('SUBJECT-WISE FEEDBACK ANALYSIS', 14, afterSummary);
-
-    autoTable(doc, {
-        startY: afterSummary + 3,
-        head: [['Code', 'Subject Name', 'Staff Name', 'Responses', 'Avg Score', 'Percentage']],
         body: subjectAvgRows,
         theme: 'striped',
-        headStyles: { fillColor: [27, 94, 32], textColor: 255, fontStyle: 'bold', fontSize: 8 },
-        bodyStyles: { fontSize: 8 },
+        headStyles: {
+            fillColor: [27, 94, 32], textColor: 255, fontStyle: 'bold',
+            fontSize: 8, halign: 'center', valign: 'middle', cellPadding: 2,
+        },
+        bodyStyles: { fontSize: 9, halign: 'center', valign: 'middle', cellPadding: 2 },
         alternateRowStyles: { fillColor: [232, 245, 233] },
         columnStyles: {
             0: { cellWidth: 22 },
-            1: { cellWidth: 55 },
-            2: { cellWidth: 45 },
-            3: { cellWidth: 22, halign: 'center' },
-            4: { cellWidth: 18, halign: 'center' },
-            5: { cellWidth: 22, halign: 'center' },
+            1: { cellWidth: 46, halign: 'left' },
+            2: { cellWidth: 36, halign: 'left' },
+            3: { cellWidth: 12 }, 4: { cellWidth: 12 },
+            5: { cellWidth: 12 }, 6: { cellWidth: 12 },
+            7: { cellWidth: 12 }, 8: { cellWidth: 12 },
+            9: { cellWidth: 12 }, 10: { cellWidth: 12 },
+            11: { cellWidth: 12 }, 12: { cellWidth: 12 },
+            13: { cellWidth: 18 },
+            14: { cellWidth: 18 },
         },
-        margin: { left: 14, right: 14 },
+        margin: { left: marginL, right: marginR },
     });
 
-    // ---- Question-wise breakdown ----
-    const qStartY = doc.lastAutoTable.finalY + 10;
+    // ── NOTE: QUESTION-WISE 2-COL TABLE ──────────────────────────
+    const noteY = doc.lastAutoTable.finalY + 6;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(27, 94, 32);
-    doc.text('QUESTION-WISE AVERAGE (ALL SUBJECTS)', 14, qStartY);
+    doc.text('NOTE: QUESTION-WISE AVERAGE (ALL SUBJECTS)', marginL, noteY);
 
-    const qAvgs = QUESTIONS.map((q, i) => {
-        const qKey = `q${i + 1}`;
-        const vals = responses.filter(r => r[qKey] != null).map(r => r[qKey]);
-        const avg = vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0;
-        return [`Q${i + 1}`, q.length > 70 ? q.substring(0, 67) + '...' : q, vals.length, avg > 0 ? avg.toFixed(2) : 'N/A'];
+    const qAvgAll = QUESTIONS.map((q, i) => {
+        const key = `q${i + 1}`;
+        const vals = responses.filter(r => r[key] != null).map(r => r[key]);
+        const avg = vals.length ? (vals.reduce((s, v) => s + v, 0) / vals.length).toFixed(2) : 'N/A';
+        return { label: `Q${i + 1}`, question: q, avg };
     });
 
+    const noteBody = Array.from({ length: 5 }, (_, i) => [
+        qAvgAll[i].label, qAvgAll[i].question, qAvgAll[i].avg,
+        qAvgAll[i + 5].label, qAvgAll[i + 5].question, qAvgAll[i + 5].avg,
+    ]);
+
     autoTable(doc, {
-        startY: qStartY + 3,
-        head: [['Q#', 'Question', 'Responses', 'Avg (1-5)']],
-        body: qAvgs,
+        startY: noteY + 3,
+        head: [['Q#', 'Question (Q1 – Q5)', 'Avg', 'Q#', 'Question (Q6 – Q10)', 'Avg']],
+        body: noteBody,
         theme: 'striped',
-        headStyles: { fillColor: [46, 125, 50], textColor: 255, fontStyle: 'bold', fontSize: 8 },
-        bodyStyles: { fontSize: 7.5 },
+        headStyles: {
+            fillColor: [27, 94, 32], textColor: 255, fontStyle: 'bold',
+            fontSize: 9, halign: 'center', cellPadding: 2,
+        },
+        bodyStyles: { fontSize: 9, cellPadding: 2 },
         alternateRowStyles: { fillColor: [232, 245, 233] },
         columnStyles: {
             0: { cellWidth: 12, halign: 'center' },
-            1: { cellWidth: 115 },
-            2: { cellWidth: 22, halign: 'center' },
-            3: { cellWidth: 20, halign: 'center' },
+            1: { cellWidth: 108 },
+            2: { cellWidth: 18, halign: 'center' },
+            3: { cellWidth: 12, halign: 'center' },
+            4: { cellWidth: 108 },
+            5: { cellWidth: 18, halign: 'center' },
         },
-        margin: { left: 14, right: 14 },
+        margin: { left: marginL, right: marginR },
     });
 
-    // ---- Footer ----
+    // ── DEAN SIGNATURE  (bottom-right of last page) ───────────────
+    const deanLabel = getDeanLabel(session.faculty_type);
+    const sigY = doc.lastAutoTable.finalY + 8;
+    const sigX = pageW - marginR;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 30, 30);
+    doc.text(deanLabel, sigX, sigY, { align: 'right' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(110, 110, 110);
+
+    // ── FOOTER ────────────────────────────────────────────────────
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(7);
         doc.setTextColor(150);
         doc.text(
-            `Page ${i} of ${pageCount} · Karpagam Academy of Higher Education · Feedback Report · Generated: ${new Date().toLocaleString('en-IN')}`,
-            pageW / 2, doc.internal.pageSize.getHeight() - 8, { align: 'center' }
+            `Page ${i} of ${pageCount}  ·  Karpagam Academy of Higher Education  ·  Student Feedback Report`,
+            pageW / 2, pageH - 6, { align: 'center' }
         );
     }
 

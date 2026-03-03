@@ -48,10 +48,12 @@ export default function Landing() {
                 Student Feedback System
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.9rem', textAlign: 'center', marginBottom: '6px', fontWeight: 400 }}>
-                Karpagam Academy of Higher Education
+                KARPAGAM ACADEMY OF HIGHER EDUCATION
             </p>
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', textAlign: 'center', marginBottom: '44px', fontStyle: 'italic' }}>
-                (Deemed to be University)
+                (Deemed to be University) <br />
+                (Established Under Section 3 of UGC Act, 1956) <br />
+                Accredited with A+ Grade by NAAC in the Second cycle.
             </p>
 
             {/* Portal Cards */}
