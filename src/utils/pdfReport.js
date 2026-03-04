@@ -148,23 +148,22 @@ export async function generatePDFReport(session, assignments, responses) {
             'Students\nCount', 'Avg of\nAll 10',
         ]],
         body: subjectAvgRows,
-        theme: 'striped',
+        theme: 'grid',
         headStyles: {
             fillColor: [27, 94, 32], textColor: 255, fontStyle: 'bold',
             fontSize: 8, halign: 'center', valign: 'middle', cellPadding: 2,
         },
-        bodyStyles: { fontSize: 9, halign: 'center', valign: 'middle', cellPadding: 2 },
-        alternateRowStyles: { fillColor: [232, 245, 233] },
+        bodyStyles: { fontSize: 9, halign: 'center', valign: 'middle', cellPadding: 2, fillColor: [255, 255, 255] },
         columnStyles: {
             0: { cellWidth: 22 },
             1: { cellWidth: 46, halign: 'left' },
             2: { cellWidth: 36, halign: 'left' },
-            3: { cellWidth: 12 }, 4: { cellWidth: 12 },
-            5: { cellWidth: 12 }, 6: { cellWidth: 12 },
-            7: { cellWidth: 12 }, 8: { cellWidth: 12 },
-            9: { cellWidth: 12 }, 10: { cellWidth: 12 },
-            11: { cellWidth: 12 }, 12: { cellWidth: 12 },
-            13: { cellWidth: 18 },
+            3: { cellWidth: 13 }, 4: { cellWidth: 13 },
+            5: { cellWidth: 13 }, 6: { cellWidth: 13 },
+            7: { cellWidth: 13 }, 8: { cellWidth: 13 },
+            9: { cellWidth: 13 }, 10: { cellWidth: 13 },
+            11: { cellWidth: 13 }, 12: { cellWidth: 13 },
+            13: { cellWidth: 17 },
             14: { cellWidth: 18 },
         },
         margin: { left: marginL, right: marginR },
@@ -175,7 +174,7 @@ export async function generatePDFReport(session, assignments, responses) {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(27, 94, 32);
-    doc.text('NOTE: QUESTION-WISE AVERAGE (ALL SUBJECTS)', marginL, noteY);
+    doc.text('NOTE:', marginL, noteY);
 
     const qAvgAll = QUESTIONS.map((q, i) => {
         const key = `q${i + 1}`;
@@ -185,35 +184,32 @@ export async function generatePDFReport(session, assignments, responses) {
     });
 
     const noteBody = Array.from({ length: 5 }, (_, i) => [
-        qAvgAll[i].label, qAvgAll[i].question, qAvgAll[i].avg,
-        qAvgAll[i + 5].label, qAvgAll[i + 5].question, qAvgAll[i + 5].avg,
+        qAvgAll[i].label, qAvgAll[i].question,
+        qAvgAll[i + 5].label, qAvgAll[i + 5].question,
     ]);
 
     autoTable(doc, {
         startY: noteY + 3,
-        head: [['Q#', 'Question (Q1 – Q5)', 'Avg', 'Q#', 'Question (Q6 – Q10)', 'Avg']],
+        head: [['Q#', 'Question (Q1 – Q5)', 'Q#', 'Question (Q6 – Q10)']],
         body: noteBody,
-        theme: 'striped',
+        theme: 'grid',
         headStyles: {
             fillColor: [27, 94, 32], textColor: 255, fontStyle: 'bold',
             fontSize: 9, halign: 'center', cellPadding: 2,
         },
-        bodyStyles: { fontSize: 9, cellPadding: 2 },
-        alternateRowStyles: { fillColor: [232, 245, 233] },
+        bodyStyles: { fontSize: 9, cellPadding: 2, fillColor: [255, 255, 255] },
         columnStyles: {
             0: { cellWidth: 12, halign: 'center' },
-            1: { cellWidth: 108 },
-            2: { cellWidth: 18, halign: 'center' },
-            3: { cellWidth: 12, halign: 'center' },
-            4: { cellWidth: 108 },
-            5: { cellWidth: 18, halign: 'center' },
+            1: { cellWidth: 122.5 },
+            2: { cellWidth: 12, halign: 'center' },
+            3: { cellWidth: 122.5 },
         },
         margin: { left: marginL, right: marginR },
     });
 
     // ── DEAN SIGNATURE  (bottom-right of last page) ───────────────
     const deanLabel = getDeanLabel(session.faculty_type);
-    const sigY = doc.lastAutoTable.finalY + 8;
+    const sigY = doc.lastAutoTable.finalY + 30;
     const sigX = pageW - marginR;
 
     doc.setFontSize(10);
@@ -226,13 +222,21 @@ export async function generatePDFReport(session, assignments, responses) {
 
     // ── FOOTER ────────────────────────────────────────────────────
     const pageCount = doc.internal.getNumberOfPages();
+    const genDate = new Date().toLocaleString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true,
+    });
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(7);
         doc.setTextColor(150);
         doc.text(
             `Page ${i} of ${pageCount}  ·  Karpagam Academy of Higher Education  ·  Student Feedback Report`,
-            pageW / 2, pageH - 6, { align: 'center' }
+            pageW / 2, pageH - 9, { align: 'center' }
+        );
+        doc.text(
+            `Generated on: ${genDate}`,
+            pageW / 2, pageH - 5, { align: 'center' }
         );
     }
 

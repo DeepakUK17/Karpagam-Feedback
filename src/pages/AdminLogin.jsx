@@ -96,17 +96,7 @@ export default function AdminLogin() {
                             <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
                                 {loading ? '⏳ Signing In...' : '🔐 Sign In'}
                             </button>
-                        </form>
-
-                        <div className="divider" />
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <p style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--text)', marginBottom: '4px' }}>Faculty Portals:</p>
-                            {FACULTY_TYPES.map(f => (
-                                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                                    <span style={{ fontWeight: '700', color: 'var(--accent)' }}>{f}</span> – {FACULTY_LABELS[f]}
-                                </div>
-                            ))}
-                        </div>
+                        </form>                        
                     </div>
                 </div>
                 <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>

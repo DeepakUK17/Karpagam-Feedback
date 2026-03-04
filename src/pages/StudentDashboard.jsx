@@ -76,15 +76,15 @@ export default function StudentDashboard() {
                     {/* Student Info Card */}
                     <div className="card" style={{ marginBottom: '20px' }}>
                         <div className="card-header">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <div>
-                                    <h2>{student.student_name}</h2>
-                                    <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.82rem', marginTop: '4px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                    <h2 style={{ overflowWrap: 'break-word', wordBreak: 'break-word', lineHeight: 1.3 }}>{student.student_name}</h2>
+                                    <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.82rem', marginTop: '4px', overflowWrap: 'break-word', wordBreak: 'break-all' }}>
                                         Roll No: {student.roll_number} · {student.department}
                                     </p>
                                 </div>
                                 {assignments.length > 0 && (
-                                    <div style={{ textAlign: 'right' }}>
+                                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
                                         <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.7)', marginBottom: '2px' }}>PROGRESS</div>
                                         <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'white' }}>{completedCount}/{assignments.length}</div>
                                     </div>
