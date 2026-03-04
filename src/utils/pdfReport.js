@@ -170,11 +170,29 @@ export async function generatePDFReport(session, assignments, responses) {
     });
 
     // ── NOTE: QUESTION-WISE 2-COL TABLE ──────────────────────────
-    const noteY = doc.lastAutoTable.finalY + 6;
+    // Estimate how tall the NOTE block will be:
+    //   label row (6mm) + table header (8mm) + 5 body rows (≈7mm each) = ~49mm
+    const NOTE_BLOCK_H = 49;
+    const BOTTOM_MARGIN = 16; // space reserved for page footer text
+    const usablePageH = pageH - BOTTOM_MARGIN;
+
+    const afterSubjectTable = doc.lastAutoTable.finalY;
+    const spaceLeft = usablePageH - afterSubjectTable;
+
+    let noteStartY;
+    if (spaceLeft >= NOTE_BLOCK_H + 6) {
+        // Enough room — keep it on the same page
+        noteStartY = afterSubjectTable + 6;
+    } else {
+        // Not enough room — push to a fresh page
+        doc.addPage();
+        noteStartY = 14;
+    }
+
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(27, 94, 32);
-    doc.text('NOTE:', marginL, noteY);
+    doc.text('NOTE:', marginL, noteStartY);
 
     const qAvgAll = QUESTIONS.map((q, i) => {
         const key = `q${i + 1}`;
@@ -189,7 +207,7 @@ export async function generatePDFReport(session, assignments, responses) {
     ]);
 
     autoTable(doc, {
-        startY: noteY + 3,
+        startY: noteStartY + 3,
         head: [['Q#', 'Question (Q1 – Q5)', 'Q#', 'Question (Q6 – Q10)']],
         body: noteBody,
         theme: 'grid',
@@ -204,21 +222,20 @@ export async function generatePDFReport(session, assignments, responses) {
             2: { cellWidth: 12, halign: 'center' },
             3: { cellWidth: 122.5 },
         },
+        // Never break the question rows across pages
+        rowPageBreak: 'avoid',
         margin: { left: marginL, right: marginR },
     });
 
-    // ── DEAN SIGNATURE  (bottom-right of last page) ───────────────
+    // ── DEAN SIGNATURE  (bottom-right, on whichever page NOTE table ended) ──
     const deanLabel = getDeanLabel(session.faculty_type);
-    const sigY = doc.lastAutoTable.finalY + 30;
     const sigX = pageW - marginR;
+    const sigY = doc.lastAutoTable.finalY + 18;
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(30, 30, 30);
     doc.text(deanLabel, sigX, sigY, { align: 'right' });
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(110, 110, 110);
 
     // ── FOOTER ────────────────────────────────────────────────────
     const pageCount = doc.internal.getNumberOfPages();
@@ -242,3 +259,4 @@ export async function generatePDFReport(session, assignments, responses) {
 
     doc.save(`Feedback_Report_${session.faculty_type}_${session.academic_year || 'NA'}_${Date.now()}.pdf`);
 }
+
