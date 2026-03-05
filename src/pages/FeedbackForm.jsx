@@ -77,17 +77,32 @@ export default function FeedbackForm() {
         if (!allAnswered) { setError('Please answer all 10 questions before submitting.'); return; }
         setSubmitting(true); setError('');
         try {
-            const responseData = {
-                assignment_id: assignmentId,
-                session_id: assignment.session_id,
-                roll_number: student.roll_number,
-                staff_id: assignment.staff_id,
-                subject_code: assignment.subject_code,
-                q1: answers[0], q2: answers[1], q3: answers[2], q4: answers[3], q5: answers[4],
-                q6: answers[5], q7: answers[6], q8: answers[7], q9: answers[8], q10: answers[9],
-            };
-            const { error: respErr } = await supabase.from('feedback_responses').insert(responseData);
-            if (respErr) throw respErr;
+            // --- IDEMPOTENCY CHECK ---
+            // A previous attempt may have inserted the response but failed to mark
+            // the assignment as completed (common on weak/flaky networks).
+            // Check if a response already exists before inserting a new one.
+            const { data: existingResp } = await supabase
+                .from('feedback_responses')
+                .select('id')
+                .eq('assignment_id', assignmentId)
+                .maybeSingle();
+
+            if (!existingResp) {
+                // No prior response → insert fresh
+                const responseData = {
+                    assignment_id: assignmentId,
+                    session_id: assignment.session_id,
+                    roll_number: student.roll_number,
+                    staff_id: assignment.staff_id,
+                    subject_code: assignment.subject_code,
+                    q1: answers[0], q2: answers[1], q3: answers[2], q4: answers[3], q5: answers[4],
+                    q6: answers[5], q7: answers[6], q8: answers[7], q9: answers[8], q10: answers[9],
+                };
+                const { error: respErr } = await supabase.from('feedback_responses').insert(responseData);
+                if (respErr) throw respErr;
+            }
+            // If existingResp is found we skip the insert (already done) and fall
+            // through to mark the assignment completed — making this retry-safe.
 
             const { error: updateErr } = await supabase
                 .from('feedback_assignments').update({ completed: true }).eq('id', assignmentId);
@@ -108,7 +123,7 @@ export default function FeedbackForm() {
                 navigate('/student/dashboard');
             }
         } catch (err) {
-            setError(err.message);
+            setError('Submission failed. Please check your connection and tap Submit again — your progress is safe.');
         } finally {
             setSubmitting(false);
         }

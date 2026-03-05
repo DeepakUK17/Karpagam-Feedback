@@ -8,6 +8,7 @@ export default function StudentDashboard() {
     const [assignments, setAssignments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sessionStatus, setSessionStatus] = useState('active');
+    const [fetchError, setFetchError] = useState(false);
     const navigate = useNavigate();
 
     const student = JSON.parse(sessionStorage.getItem('student') || '{}');
@@ -18,6 +19,7 @@ export default function StudentDashboard() {
 
     async function fetchAssignments() {
         setLoading(true);
+        setFetchError(false);
         try {
             // Get assignments for this student with active sessions only
             const { data: assignData, error } = await supabase
@@ -44,7 +46,7 @@ export default function StudentDashboard() {
             }
         } catch (err) {
             console.error(err);
-            setAssignments([]);
+            setFetchError(true);
         } finally {
             setLoading(false);
         }
@@ -65,6 +67,24 @@ export default function StudentDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
                 <Header type="student" />
                 <div className="page"><div className="container"><div className="loading-state"><div className="spinner" /><p>Loading your subjects…</p></div></div></div>
+            </div>
+        );
+    }
+
+    if (fetchError) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+                <Header type="student" />
+                <div className="page"><div className="container">
+                    <div className="empty-state">
+                        <div className="empty-state-icon">📡</div>
+                        <h3>Connection Problem</h3>
+                        <p>Could not load your subjects. Please check your internet connection and try again.</p>
+                        <button className="btn btn-primary" style={{ marginTop: '16px' }} onClick={fetchAssignments}>
+                            🔄 Retry
+                        </button>
+                    </div>
+                </div></div>
             </div>
         );
     }
