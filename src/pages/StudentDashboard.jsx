@@ -9,6 +9,9 @@ export default function StudentDashboard() {
     const [loading, setLoading] = useState(true);
     const [sessionStatus, setSessionStatus] = useState('active');
     const [fetchError, setFetchError] = useState(false);
+    const [showOverlay, setShowOverlay] = useState(false);
+    const [countdown, setCountdown] = useState(10);
+    const [targetAssignmentId, setTargetAssignmentId] = useState(null);
     const navigate = useNavigate();
 
     const student = JSON.parse(sessionStorage.getItem('student') || '{}');
@@ -16,6 +19,16 @@ export default function StudentDashboard() {
     useEffect(() => {
         fetchAssignments();
     }, []);
+
+    useEffect(() => {
+        if (showOverlay && countdown > 0) {
+            const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+            return () => clearTimeout(timer);
+        } else if (showOverlay && countdown === 0 && targetAssignmentId) {
+            setShowOverlay(false);
+            navigate(`/student/feedback/${targetAssignmentId}`);
+        }
+    }, [showOverlay, countdown, targetAssignmentId, navigate]);
 
     async function fetchAssignments() {
         setLoading(true);
@@ -58,8 +71,14 @@ export default function StudentDashboard() {
 
     const handleStartFeedback = () => {
         if (pendingAssignments.length > 0) {
-            navigate(`/student/feedback/${pendingAssignments[0].id}`);
+            handleSubjectClick(pendingAssignments[0].id);
         }
+    };
+
+    const handleSubjectClick = (id) => {
+        setTargetAssignmentId(id);
+        setCountdown(10);
+        setShowOverlay(true);
     };
 
     if (loading) {
@@ -90,7 +109,31 @@ export default function StudentDashboard() {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative' }}>
+            {showOverlay && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: '#d32f2f',
+                    color: 'white',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 9999,
+                    padding: '20px',
+                    textAlign: 'center'
+                }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '20px' }}>⚠️</div>
+                    <h1 style={{ fontSize: '2.5rem', marginBottom: '20px', fontWeight: 'bold' }}>Important Instructions</h1>
+                    <p style={{ fontSize: '1.5rem', maxWidth: '800px', lineHeight: 1.5, marginBottom: '40px', color: 'white' }}>
+                        Read the question carefully and put feedback. Your honest opinions help improve the teaching quality.
+                    </p>
+                    <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>
+                        Starting in <span style={{ fontSize: '3rem', margin: '0 10px' }}>{countdown}</span> seconds...
+                    </div>
+                </div>
+            )}
             <Header type="student" />
             <div className="page">
                 <div className="container">
@@ -168,7 +211,7 @@ export default function StudentDashboard() {
                                     <div
                                         key={a.id}
                                         className={`subject-card ${a.completed ? 'subject-card--done' : ''}`}
-                                        onClick={() => !a.completed && navigate(`/student/feedback/${a.id}`)}
+                                        onClick={() => !a.completed && handleSubjectClick(a.id)}
                                         style={{ cursor: a.completed ? 'not-allowed' : 'pointer' }}
                                     >
                                         <div className="subject-card-num">

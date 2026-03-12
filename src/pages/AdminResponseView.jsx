@@ -26,7 +26,7 @@ export default function AdminResponseView() {
     const [assignments, setAssignments] = useState([]);
     const [responses, setResponses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('subject'); // 'subject' | 'student' | 'detail'
+    const [activeTab, setActiveTab] = useState('subject'); // 'subject' | 'student' | 'detail' | 'comments'
     const [expandedSubject, setExpandedSubject] = useState(null);
 
     const admin = JSON.parse(sessionStorage.getItem('admin') || '{}');
@@ -77,7 +77,7 @@ export default function AdminResponseView() {
     function exportCSV() {
         if (!responses.length) return;
         const headers = ['Roll Number', 'Student Name', 'Subject Code', 'Subject Name', 'Staff Name',
-            ...QUESTIONS.map((_, i) => `Q${i + 1}`), 'Average'];
+            ...QUESTIONS.map((_, i) => `Q${i + 1}`), 'Average', 'Feedback'];
         const rows = responses.map(r => {
             const assign = assignments.find(a => a.id === r.assignment_id) || {};
             const avg = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].reduce((s, n) => s + (r[q(n)] || 0), 0) / 10;
@@ -85,6 +85,7 @@ export default function AdminResponseView() {
                 r.roll_number, assign.student_name || '', r.subject_code, assign.subject_name || '', assign.staff_name || '',
                 ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => r[q(n)] || ''),
                 avg.toFixed(2),
+                r.comments || ''
             ];
         });
         const csv = [headers, ...rows].map(row => row.map(v => `"${v}"`).join(',')).join('\n');
@@ -163,7 +164,7 @@ export default function AdminResponseView() {
 
                     {/* Tabs */}
                     <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', borderBottom: '2px solid var(--border)', paddingBottom: '0' }}>
-                        {[['subject', '📚 By Subject'], ['student', '👥 By Student'], ['detail', '📋 Detail View']].map(([tab, label]) => (
+                        {[['subject', '📚 By Subject'], ['student', '👥 By Student'], ['detail', '📋 Detail View'], ['comments', '💬 Comments']].map(([tab, label]) => (
                             <button key={tab} onClick={() => setActiveTab(tab)}
                                 style={{
                                     padding: '10px 16px', border: 'none', background: 'none', cursor: 'pointer',
@@ -332,6 +333,41 @@ export default function AdminResponseView() {
                                                         <td style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 800, color: scoreColor(avg) }}>
                                                             {avg.toFixed(1)}
                                                         </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* ===== TAB: COMMENTS ===== */}
+                    {activeTab === 'comments' && (
+                        <div>
+                            {responses.filter(r => r.comments && r.comments.trim() !== '').length === 0 ? (
+                                <div className="empty-state"><div className="empty-state-icon">📭</div><h3>No comments yet</h3><p>No textual feedback provided.</p></div>
+                            ) : (
+                                <div style={{ overflowX: 'auto' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', background: 'var(--surface)', borderRadius: 'var(--radius-md)', overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
+                                        <thead>
+                                            <tr style={{ background: 'linear-gradient(135deg,var(--primary),var(--primary-light))', color: 'white' }}>
+                                                <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 700 }}>Course Code</th>
+                                                <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 700 }}>Course Name</th>
+                                                <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 700 }}>Staff Name</th>
+                                                <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 700 }}>Feedback</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {responses.filter(r => r.comments && r.comments.trim() !== '').map((r, i) => {
+                                                const assign = assignments.find(a => a.id === r.assignment_id) || {};
+                                                return (
+                                                    <tr key={r.id} style={{ background: i % 2 === 0 ? 'var(--surface)' : 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}>
+                                                        <td style={{ padding: '10px 14px', fontWeight: 600, color: 'var(--primary)', whiteSpace: 'nowrap' }}>{r.subject_code}</td>
+                                                        <td style={{ padding: '10px 14px' }}>{assign.subject_name || ''}</td>
+                                                        <td style={{ padding: '10px 14px', color: 'var(--text-secondary)' }}>{assign.staff_name || r.staff_id}</td>
+                                                        <td style={{ padding: '10px 14px', fontStyle: 'italic', color: 'var(--text)' }}>"{r.comments}"</td>
                                                     </tr>
                                                 );
                                             })}

@@ -34,6 +34,7 @@ export default function FeedbackForm() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
+    const [feedbackText, setFeedbackText] = useState('');
 
     const student = JSON.parse(sessionStorage.getItem('student') || '{}');
 
@@ -46,6 +47,7 @@ export default function FeedbackForm() {
     useEffect(() => {
         setAnswers({});
         setError('');
+        setFeedbackText('');
         fetchAssignment();
     }, [assignmentId]);
 
@@ -97,6 +99,7 @@ export default function FeedbackForm() {
                     subject_code: assignment.subject_code,
                     q1: answers[0], q2: answers[1], q3: answers[2], q4: answers[3], q5: answers[4],
                     q6: answers[5], q7: answers[6], q8: answers[7], q9: answers[8], q10: answers[9],
+                    comments: feedbackText,
                 };
                 const { error: respErr } = await supabase.from('feedback_responses').insert(responseData);
                 if (respErr) throw respErr;
@@ -326,6 +329,29 @@ export default function FeedbackForm() {
 
                 {/* Error */}
                 {error && <div className="alert alert-danger" style={{ marginBottom: '12px' }}>{error}</div>}
+
+                {/* Optional Text Feedback */}
+                <div style={{
+                    background: 'white', borderRadius: '14px', padding: '16px',
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.07)',
+                    marginBottom: '16px',
+                }}>
+                    <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#2d3748', marginBottom: '8px' }}>
+                        Any other feedback (Optional)
+                    </label>
+                    <input
+                        type="text"
+                        value={feedbackText}
+                        onChange={(e) => setFeedbackText(e.target.value)}
+                        placeholder="Share your thoughts about this subject..."
+                        style={{
+                            width: '100%', padding: '12px', border: '1.5px solid #e8ecef', borderRadius: '8px',
+                            fontSize: '0.9rem', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box'
+                        }}
+                        onFocus={(e) => e.target.style.borderColor = '#1B5E20'}
+                        onBlur={(e) => e.target.style.borderColor = '#e8ecef'}
+                    />
+                </div>
 
                 {/* Submit bar */}
                 <div style={{

@@ -169,20 +169,87 @@ export async function generatePDFReport(session, assignments, responses) {
         margin: { left: marginL, right: marginR },
     });
 
+    const BOTTOM_MARGIN = 16; // space reserved for page footer text
+    const usablePageH = pageH - BOTTOM_MARGIN;
+
+    // ── COMMENTS TABLE ─────────────────────────────────────────────
+    const commentsBySubject = {};
+    responses.forEach(r => {
+        if (r.comments && r.comments.trim() !== '') {
+            if (!commentsBySubject[r.subject_code]) {
+                const assign = assignments.find(a => a.id === r.assignment_id) || {};
+                commentsBySubject[r.subject_code] = {
+                    subject_code: r.subject_code,
+                    subject_name: assign.subject_name || '',
+                    staff_name: assign.staff_name || r.staff_id,
+                    comments: []
+                };
+            }
+            commentsBySubject[r.subject_code].comments.push(r.comments.trim());
+        }
+    });
+
+    const commentsData = [];
+    Object.values(commentsBySubject).forEach(sub => {
+        sub.comments.forEach((comment, index) => {
+            if (index === 0) {
+                commentsData.push([
+                    { content: sub.subject_code, rowSpan: sub.comments.length, styles: { valign: 'middle' } },
+                    { content: sub.subject_name, rowSpan: sub.comments.length, styles: { valign: 'middle' } },
+                    { content: sub.staff_name, rowSpan: sub.comments.length, styles: { valign: 'middle' } },
+                    comment
+                ]);
+            } else {
+                commentsData.push([comment]);
+            }
+        });
+    });
+
+    if (commentsData.length > 0) {
+        let commentsStartY = doc.lastAutoTable.finalY + 10;
+        
+        if (usablePageH - commentsStartY < 30) {
+            doc.addPage();
+            commentsStartY = 14;
+        }
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(27, 94, 32);
+        doc.text('STUDENT COMMENTS & FEEDBACK', marginL, commentsStartY);
+
+        autoTable(doc, {
+            startY: commentsStartY + 3,
+            head: [['Course Code', 'Course Name', 'Staff Name', 'Feedback']],
+            body: commentsData,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [27, 94, 32], textColor: 255, fontStyle: 'bold',
+                fontSize: 9, halign: 'left', cellPadding: 2,
+            },
+            bodyStyles: { fontSize: 9, cellPadding: 2, fillColor: [255, 255, 255], fontStyle: 'italic' },
+            columnStyles: {
+                0: { cellWidth: 25 },
+                1: { cellWidth: 46 },
+                2: { cellWidth: 36 },
+                3: { cellWidth: 'auto' },
+            },
+            margin: { left: marginL, right: marginR },
+        });
+    }
+
     // ── NOTE: QUESTION-WISE 2-COL TABLE ──────────────────────────
     // Estimate how tall the NOTE block will be:
     //   label row (6mm) + table header (8mm) + 5 body rows (≈7mm each) = ~49mm
     const NOTE_BLOCK_H = 49;
-    const BOTTOM_MARGIN = 16; // space reserved for page footer text
-    const usablePageH = pageH - BOTTOM_MARGIN;
 
-    const afterSubjectTable = doc.lastAutoTable.finalY;
-    const spaceLeft = usablePageH - afterSubjectTable;
+    const afterCommentsTable = doc.lastAutoTable.finalY;
+    const spaceLeft = usablePageH - afterCommentsTable;
 
     let noteStartY;
     if (spaceLeft >= NOTE_BLOCK_H + 6) {
         // Enough room — keep it on the same page
-        noteStartY = afterSubjectTable + 6;
+        noteStartY = afterCommentsTable + 6;
     } else {
         // Not enough room — push to a fresh page
         doc.addPage();
@@ -227,15 +294,24 @@ export async function generatePDFReport(session, assignments, responses) {
         margin: { left: marginL, right: marginR },
     });
 
-    // ── DEAN SIGNATURE  (bottom-right, on whichever page NOTE table ended) ──
+    // ── DEAN SIGNATURE  (bottom-right, on whichever page ended last) ──
     const deanLabel = getDeanLabel(session.faculty_type);
     const sigX = pageW - marginR;
-    const sigY = doc.lastAutoTable.finalY + 18;
+    const sigY = (doc.lastAutoTable.finalY || 14) + 18;
 
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(30, 30, 30);
-    doc.text(deanLabel, sigX, sigY, { align: 'right' });
+    // Make sure signature fits on page
+    if (usablePageH - sigY < 10) {
+        doc.addPage();
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(30, 30, 30);
+        doc.text(deanLabel, sigX, 24, { align: 'right' });
+    } else {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(30, 30, 30);
+        doc.text(deanLabel, sigX, sigY, { align: 'right' });
+    }
 
     // ── FOOTER ────────────────────────────────────────────────────
     const pageCount = doc.internal.getNumberOfPages();
