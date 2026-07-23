@@ -47,7 +47,7 @@ export async function generatePDFReport(session, assignments, responses) {
     doc.setFontSize(15);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(27, 94, 32);
-    doc.text('KARPAGAM ACADEMY OF HIGHER EDUCATION', pageW / 2, y, { align: 'center' });
+    doc.text('ABC COLLEGE', pageW / 2, y, { align: 'center' });
 
     y += 6;
     doc.setFontSize(9);
@@ -258,7 +258,7 @@ export async function generatePDFReport(session, assignments, responses) {
         doc.setFontSize(7);
         doc.setTextColor(150);
         doc.text(
-            `Page ${i} of ${pageCount}  ·  Karpagam Academy of Higher Education  ·  Student Feedback Report`,
+            `Page ${i} of ${pageCount}  ·  ABC College  ·  Student Feedback Report`,
             pageW / 2, pageH - 9, { align: 'center' }
         );
         doc.text(

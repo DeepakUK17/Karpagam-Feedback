@@ -17,7 +17,7 @@ export default function ChangePassword() {
         setError('');
         if (newPass.length < 6) { setError('Password must be at least 6 characters.'); return; }
         if (newPass !== confirm) { setError('Passwords do not match.'); return; }
-        if (newPass === 'karpagam') { setError('Please choose a different password from the default.'); return; }
+        if (newPass === 'student123') { setError('Please choose a different password from the default.'); return; }
         setLoading(true);
         try {
             const { error: updateErr } = await supabase
@@ -50,7 +50,7 @@ export default function ChangePassword() {
                         <div className="card-body">
                             {error && <div className="alert alert-danger">{error}</div>}
                             <div className="alert alert-info" style={{ marginBottom: '16px' }}>
-                                🔒 This is a one-time setup. Your new password replaces the default "karpagam" password.
+                                🔒 This is a one-time setup. Your new password replaces the default "student123" password.
                             </div>
                             <form onSubmit={handleSubmit}>
                                 <div className="form-group">

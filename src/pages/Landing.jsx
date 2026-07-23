@@ -36,7 +36,7 @@ export default function Landing() {
             }}>
                 <img
                     src={import.meta.env.BASE_URL + 'logo.jpg'}
-                    alt="KAHE Logo"
+                    alt="ABC Logo"
                     style={{ width: '100%', height: '100%', borderRadius: '12px', objectFit: 'contain' }}
                 />
             </div>
@@ -51,7 +51,7 @@ export default function Landing() {
                 letterSpacing: '0.3px',
                 padding: '0 8px',
             }}>
-                KARPAGAM ACADEMY OF HIGHER EDUCATION
+                ABC COLLEGE
             </p>
             <p style={{
                 color: '#4A5568',
@@ -157,7 +157,7 @@ export default function Landing() {
 
             {/* Footer */}
             <p style={{ color: '#A0AEC0', fontSize: '0.7rem', textAlign: 'center', margin: '0 0 2px', padding: '0 16px' }}>
-                © 2026 Karpagam Academy of Higher Education – Feedback System
+                © 2026 ABC College – Feedback System
             </p>
             <DevCredit />
         </div>

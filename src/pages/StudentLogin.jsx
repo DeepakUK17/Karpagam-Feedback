@@ -25,7 +25,7 @@ export default function StudentLogin() {
                 throw new Error('Roll number not found. Please check and try again.');
             }
             if (student.password !== password) {
-                throw new Error('Incorrect password. The default password is "karpagam".');
+                throw new Error('Incorrect password. The default password is "student123".');
             }
 
             sessionStorage.setItem('student', JSON.stringify(student));
@@ -41,8 +41,8 @@ export default function StudentLogin() {
         <div className="login-page">
             <div className="login-box">
                 <div className="login-logo-wrap">
-                    <img src={import.meta.env.BASE_URL + 'logo.jpg'} alt="KAHE Logo" className="login-logo" style={{ borderRadius: '12px', objectFit: 'contain', background: 'white' }} />
-                    <div className="login-college-name">KARPAGAM ACADEMY OF HIGHER EDUCATION</div>
+                    <img src={import.meta.env.BASE_URL + 'logo.jpg'} alt="ABC Logo" className="login-logo" style={{ borderRadius: '12px', objectFit: 'contain', background: 'white' }} />
+                    <div className="login-college-name">ABC COLLEGE</div>
                     <div className="login-college-sub">(Deemed to be University) <br />
                         (Established Under Section 3 of UGC Act, 1956) <br />
                         Accredited with A+ Grade by NAAC in the Second cycle.</div>
@@ -76,7 +76,7 @@ export default function StudentLogin() {
                                 <input
                                     type="password"
                                     className="form-input"
-                                    placeholder="karpagam"
+                                    placeholder="student123"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     required

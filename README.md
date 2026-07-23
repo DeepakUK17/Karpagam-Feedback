@@ -1,8 +1,8 @@
-# 🎓 Karpagam Academy of Higher Education — Student Feedback System
+# 🎓 ABC College — Student Feedback System
 
-A web-based Student Feedback Management System built for **Karpagam Academy of Higher Education (KAHE)**. Students submit feedback for their subjects/staff, and admins can view, analyse, and export reports as PDF.
+A web-based Student Feedback Management System built for **ABC College (ABC)**. Students submit feedback for their subjects/staff, and admins can view, analyse, and export reports as PDF.
 
-🌐 **Live Site:** [https://deepakuk17.github.io/Karpagam-Feedback/](https://deepakuk17.github.io/Karpagam-Feedback/)
+🌐 **Live Site:** [https://deepakuk17.github.io/College-Feedback-System/](https://deepakuk17.github.io/College-Feedback-System/)
 
 ---
 
@@ -63,8 +63,8 @@ A web-based Student Feedback Management System built for **Karpagam Academy of H
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/DeepakUK17/Karpagam-Feedback.git
-cd Karpagam-Feedback
+git clone https://github.com/DeepakUK17/College-Feedback-System.git
+cd College-Feedback-System
 ```
 
 ### 2. Install dependencies
@@ -83,7 +83,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```bash
 npm run dev
 ```
-Open [http://localhost:5173/Karpagam-Feedback/](http://localhost:5173/Karpagam-Feedback/)
+Open [http://localhost:5173/College-Feedback-System/](http://localhost:5173/College-Feedback-System/)
 
 ---
 
@@ -95,7 +95,7 @@ npm run deploy
 
 This runs `vite build` and publishes the `dist/` folder to the `gh-pages` branch automatically.
 
-> Make sure `vite.config.js` has `base: '/Karpagam-Feedback/'` set correctly.
+> Make sure `vite.config.js` has `base: '/College-Feedback-System/'` set correctly.
 
 ---
 
@@ -146,5 +146,5 @@ src/
 
 ## 👨‍💻 Developer
 
-Built by **Deepak** for Karpagam Academy of Higher Education.  
+Built by **Deepak** for ABC College.  
 For issues or enhancements, open a GitHub Issue or contact the developer.

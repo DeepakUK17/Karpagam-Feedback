@@ -18,7 +18,7 @@ export default function DevCredit({ withCopyright = false }) {
             padding: '0 16px',
             lineHeight: 1.8,
         }}>
-            {withCopyright && <>© 2026 Karpagam Academy of Higher Education · </>}
+            {withCopyright && <>© 2026 ABC College · </>}
             Developed by{' '}
             <a href={PORTFOLIO} target="_blank" rel="noopener noreferrer"
                 style={linkStyle}

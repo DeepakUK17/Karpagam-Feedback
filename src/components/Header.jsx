@@ -25,9 +25,9 @@ export default function Header({ type = 'default' }) {
     return (
         <header className="app-header" style={{ paddingBottom: 0 }}>
             <div className="header-inner">
-                <img src={import.meta.env.BASE_URL + 'logo.jpg'} alt="KAHE Logo" className="header-logo" style={{ borderRadius: '10px', objectFit: 'contain', background: 'white' }} />
+                <img src={import.meta.env.BASE_URL + 'logo.jpg'} alt="ABC Logo" className="header-logo" style={{ borderRadius: '10px', objectFit: 'contain', background: 'white' }} />
                 <div className="header-titles">
-                    <h1>KARPAGAM ACADEMY OF HIGHER EDUCATION</h1>
+                    <h1>ABC COLLEGE</h1>
                     <p>(Deemed to be University) <br />
                         (Established Under Section 3 of UGC Act, 1956) <br />
                         Accredited with A+ Grade by NAAC in the Second cycle.</p>

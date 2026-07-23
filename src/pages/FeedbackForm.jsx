@@ -389,7 +389,7 @@ export default function FeedbackForm() {
             }}>
                 <div style={{ width: '60px', height: '2px', background: '#D1E7D4', borderRadius: '2px', margin: '0 auto 4px' }} />
                 <p style={{ color: '#A0AEC0', fontSize: '0.7rem', textAlign: 'center', margin: '8px 0 0', padding: '0 16px' }}>
-                    © 2026 Karpagam Academy of Higher Education – Feedback System
+                    © 2026 ABC College – Feedback System
                 </p>
                 <DevCredit />
             </footer>

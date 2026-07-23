@@ -53,8 +53,8 @@ export default function AdminLogin() {
         <div className="login-page">
             <div className="login-box">
                 <div className="login-logo-wrap">
-                    <img src={import.meta.env.BASE_URL + 'logo.jpg'} alt="KAHE Logo" className="login-logo" style={{ borderRadius: '12px', objectFit: 'contain', background: 'white' }} />
-                    <div className="login-college-name">KARPAGAM ACADEMY OF HIGHER EDUCATION</div>
+                    <img src={import.meta.env.BASE_URL + 'logo.jpg'} alt="ABC Logo" className="login-logo" style={{ borderRadius: '12px', objectFit: 'contain', background: 'white' }} />
+                    <div className="login-college-name">ABC COLLEGE</div>
                     <div className="login-college-sub">(Deemed to be University) <br />
                         (Established Under Section 3 of UGC Act, 1956) <br />
                         Accredited with A+ Grade by NAAC in the Second cycle.</div>
